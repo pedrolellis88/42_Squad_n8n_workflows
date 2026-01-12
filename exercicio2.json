@@ -1,0 +1,221 @@
+{
+  "name": "exercicio2",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6292a0c1-2760-4ea6-97c4-a526be1ba133",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2293bb40-c0b1-483a-86dd-302a92108c06",
+              "name": "Pokemon",
+              "value": "charmeleon",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "72c96bf3-ea1c-4309-8f58-34e85f2dc4f3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "=https://pokeapi.co/api/v2/pokemon-species/{{$json.Pokemon}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b5c7e1e6-a020-46d5-8383-9c7860b3a35f",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "data = items[0][\"json\"]\nname = data[\"name\"].capitalize()\nis_stage_1 = data[\"evolves_from_species\"] is not None\nreturn [{\"json\": {\"name\": name,\"is_stage_1\": is_stage_1}}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "8675d9cf-ea40-4f63-b69c-b10723151904",
+      "name": "Code in Python (Beta)"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "={{ $json.name }} is a stage 1 Pokémon!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -80
+      ],
+      "id": "0f19ce9a-f961-4690-b9be-46bb47081f00",
+      "name": "Discord",
+      "webhookId": "e73e907b-7430-4b5c-9a49-445f788da501",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "yO9TFLNwIZClxYut",
+          "name": "Discord Webhook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "28681527-30b1-4029-ad0b-fed9ee721f39",
+              "leftValue": "={{ $json.is_stage_1 }}",
+              "rightValue": 50,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        848,
+        0
+      ],
+      "id": "1ef61d16-3320-43c9-9c10-7010d1fa71aa",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "={{ $('Code in Python (Beta)').item.json.name }} is not a stage 1 Pokémon.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        48
+      ],
+      "id": "d1785f25-a574-42e9-8c64-23a969ae4e25",
+      "name": "Discord1",
+      "webhookId": "34403f09-14b3-44b0-a053-232260022d8e",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "yO9TFLNwIZClxYut",
+          "name": "Discord Webhook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in Python (Beta)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in Python (Beta)": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Discord1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "36c72f7c-fbce-41fc-a4cf-439cb9d788e7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b0b35035c3690e62bfc7d74acd0636e2baa4b16d527780b1006bf6d2ebfbf16b"
+  },
+  "id": "7yPOPlxKUW9tZzDe",
+  "tags": []
+}

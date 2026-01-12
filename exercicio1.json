@@ -1,0 +1,203 @@
+{
+  "name": "exercicio1",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "92e88688-008d-4a45-bb67-6db32e6574eb",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2293bb40-c0b1-483a-86dd-302a92108c06",
+              "name": "Pokemon",
+              "value": "Gyarados",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c74e8c19-2313-458c-9be8-4a20574bcb23",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "=https://pokeapi.co/api/v2/pokemon/{{$json.Pokemon}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        384,
+        48
+      ],
+      "id": "ae85a782-48e3-4a67-b866-80fa5258bb1a",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "url": "=https://pokeapi.co/api/v2/pokemon-species/{{$json.Pokemon}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        384,
+        -64
+      ],
+      "id": "b8eea052-84fa-4111-bd1c-5459ee836f24",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "97c84ff0-c021-4d5d-933d-9d42f0fe89fb",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "data = items[0][\"json\"]\nname = data[\"name\"].capitalize()\nweight_kg = data[\"weight\"] / 10\nweight_lbs = round((data[\"weight\"] * 11 / 50), 2)\ntypes = \" & \".join(t[\"type\"][\"name\"].capitalize()for t in data[\"types\"])\ngeneration = data[\"generation\"][\"name\"]\npokedex_number = data[\"pokedex_numbers\"][0][\"entry_number\"]\ndescription = \"\"\nfor entry in data[\"flavor_text_entries\"]:\n    if entry[\"language\"][\"name\"] == \"en\":\n        description = (entry[\"flavor_text\"].replace(\"\\n\", \" \").replace(\"\\f\", \" \"))\n        break\n\nreturn [{\n    \"json\": {\n        \"name\": name,\n        \"generation\": generation,\n        \"pokedex_number\": pokedex_number,\n        \"types\": types,\n        \"weight_kg\": weight_kg,\n        \"weight_lbs\": weight_lbs,\n        \"description\": description,\n    }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        0
+      ],
+      "id": "7fc47e74-7c96-46f2-a6ca-fde7220e3f99",
+      "name": "Code in Python (Beta)"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=****Pokémon Info****\n\nName: {{$json.name}}\nGeneration: {{$json.generation}}\nPokédex Number: {{$json.pokedex_number}}\n\nType(s): {{$json.types}}\nWeight: {{$json.weight_kg}} kg ({{$json.weight_lbs}} lbs)\n\nDescription : {{$json.description}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        992,
+        0
+      ],
+      "id": "e4ba7c78-c996-4a46-a1ad-dd7537447dc5",
+      "name": "Discord",
+      "webhookId": "b4f2d5be-99a7-4d2c-8662-7802ad505672",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "yO9TFLNwIZClxYut",
+          "name": "Discord Webhook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in Python (Beta)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in Python (Beta)": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c24cee94-97a4-46a9-958f-f289faff6b74",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b0b35035c3690e62bfc7d74acd0636e2baa4b16d527780b1006bf6d2ebfbf16b"
+  },
+  "id": "ujkhipHL893k5U4d",
+  "tags": []
+}
