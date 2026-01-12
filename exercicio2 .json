@@ -19,7 +19,7 @@
             {
               "id": "2293bb40-c0b1-483a-86dd-302a92108c06",
               "name": "Pokemon",
-              "value": "charmeleon",
+              "value": "pichu",
               "type": "string"
             }
           ]
@@ -43,25 +43,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        448,
+        416,
         0
       ],
       "id": "b5c7e1e6-a020-46d5-8383-9c7860b3a35f",
       "name": "HTTP Request"
-    },
-    {
-      "parameters": {
-        "language": "python",
-        "pythonCode": "data = items[0][\"json\"]\nname = data[\"name\"].capitalize()\nis_stage_1 = data[\"evolves_from_species\"] is not None\nreturn [{\"json\": {\"name\": name,\"is_stage_1\": is_stage_1}}]"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        672,
-        0
-      ],
-      "id": "8675d9cf-ea40-4f63-b69c-b10723151904",
-      "name": "Code in Python (Beta)"
     },
     {
       "parameters": {
@@ -72,7 +58,7 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        1024,
+        928,
         -80
       ],
       "id": "0f19ce9a-f961-4690-b9be-46bb47081f00",
@@ -97,11 +83,11 @@
           "conditions": [
             {
               "id": "28681527-30b1-4029-ad0b-fed9ee721f39",
-              "leftValue": "={{ $json.is_stage_1 }}",
-              "rightValue": 50,
+              "leftValue": "={{$json.evolves_from_species.name }}",
+              "rightValue": "\"name\"",
               "operator": {
-                "type": "boolean",
-                "operation": "true",
+                "type": "string",
+                "operation": "notExists",
                 "singleValue": true
               }
             }
@@ -113,7 +99,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        848,
+        656,
         0
       ],
       "id": "1ef61d16-3320-43c9-9c10-7010d1fa71aa",
@@ -122,13 +108,13 @@
     {
       "parameters": {
         "authentication": "webhook",
-        "content": "={{ $('Code in Python (Beta)').item.json.name }} is not a stage 1 Pokémon.",
+        "content": "={{ $('Edit Fields').item.json.Pokemon }} is not a stage 1 Pokémon.",
         "options": {}
       },
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        1024,
+        928,
         48
       ],
       "id": "d1785f25-a574-42e9-8c64-23a969ae4e25",
@@ -167,17 +153,6 @@
       ]
     },
     "HTTP Request": {
-      "main": [
-        [
-          {
-            "node": "Code in Python (Beta)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code in Python (Beta)": {
       "main": [
         [
           {
